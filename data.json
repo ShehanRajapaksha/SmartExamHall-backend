@@ -1,0 +1,145 @@
+{
+    "students": [
+      {
+        "stu_id": 1,
+        "name": "John Doe",
+        "degree": "IT",
+        "batch": 21,
+        "fingerprint": 12345
+      },
+      {
+        "stu_id": 2,
+        "name": "Jane Smith",
+        "degree": "ITM",
+        "batch": 22,
+        "fingerprint": 98765
+      },
+      {
+        "stu_id": 3,
+        "name": "Alice Johnson",
+        "degree": "AI",
+        "batch": 23,
+        "fingerprint": 246
+      },
+      {
+        "stu_id": 4,
+        "name": "Bob Brown",
+        "degree": "IT",
+        "batch": 21,
+        "fingerprint": 135
+      },
+      {
+        "stu_id": 5,
+        "name": "Eve White",
+        "degree": "AI",
+        "batch": 23,
+        "fingerprint": 9876
+      },
+      {
+        "stu_id": 6,
+        "name": "Michael Lee",
+        "degree": "ITM",
+        "batch": 22,
+        "fingerprint": 2468
+      },
+      {
+        "stu_id": 7,
+        "name": "Sarah Davis",
+        "degree": "AI",
+        "batch": 23,
+        "fingerprint": 123456
+      },
+      {
+        "stu_id": 8,
+        "name": "Alex Wilson",
+        "degree": "IT",
+        "batch": 21,
+        "fingerprint": 98765
+      },
+      {
+        "stu_id": 9,
+        "name": "Grace Thompson",
+        "degree": "ITM",
+        "batch": 22,
+        "fingerprint": 1357
+      },
+      {
+        "stu_id": 10,
+        "name": "Ryan Evans",
+        "degree": "AI",
+        "batch": 23,
+        "fingerprint": 2468
+      },
+      {
+        "stu_id": 11,
+        "name": "Sophia Martinez",
+        "degree": "IT",
+        "batch": 21,
+        "fingerprint": 987
+      },
+      {
+        "stu_id": 12,
+        "name": "Daniel Clark",
+        "degree": "ITM",
+        "batch": 22,
+        "fingerprint": 12345
+      },
+      {
+        "stu_id": 13,
+        "name": "Olivia Rodriguez",
+        "degree": "AI",
+        "batch": 23,
+        "fingerprint": 1357
+      },
+      {
+        "stu_id": 14,
+        "name": "Matthew Lewis",
+        "degree": "IT",
+        "batch": 21,
+        "fingerprint": 24681
+      },
+      {
+        "stu_id": 15,
+        "name": "Emily Taylor",
+        "degree": "ITM",
+        "batch": 22,
+        "fingerprint": 98765
+      },
+      {
+        "stu_id": 16,
+        "name": "Nathan Anderson",
+        "degree": "AI",
+        "batch": 23,
+        "fingerprint": 12
+      },
+      {
+        "stu_id": 17,
+        "name": "Chloe Scott",
+        "degree": "IT",
+        "batch": 21,
+        "fingerprint": 2468
+      },
+      {
+        "stu_id": 18,
+        "name": "William Green",
+        "degree": "ITM",
+        "batch": 22,
+        "fingerprint": 1357
+      },
+      {
+        "stu_id": 19,
+        "name": "Ava Hall",
+        "degree": "AI",
+        "batch": 23,
+        "fingerprint": 987654
+      },
+      {
+        "stu_id": 20,
+        "name": "Ethan Baker",
+        "degree": "IT",
+        "batch": 21,
+        "fingerprint": 1234567
+      }
+    ]
+  }
+  
