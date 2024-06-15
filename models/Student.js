@@ -1,9 +1,11 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../db/connect'); // Assuming you have a file for database connection setup
+const Fingerprint = require('./Fingerprint');
+const PC = require('./PC');
 
 const Student = sequelize.define('Student', {
   stu_id: {
-    type: DataTypes.INTEGER,
+    type: DataTypes.STRING,
     primaryKey: true,
     allowNull: false,
     validate: {
@@ -53,17 +55,17 @@ const Student = sequelize.define('Student', {
         msg: 'Degree must be one of: IT, ITM, AI'
       }
     }
-  },
-  fingerprint: {
-    type: DataTypes.INTEGER,
-    allowNull: false,
-    validate: {
-      notNull: {
-        msg: 'Fingerprint is required'
-      }
-    }
-  },
-});
+  }
+},
+
+);
+
+Student.hasOne(Fingerprint,{foreignKey:'stu_id'})
+
+Fingerprint.belongsTo(Student,{foreignKey:'stu_id'})
+
+Student.hasOne(PC,{foreignKey:"stu_id"})
+PC.belongsTo(Student,{foreignKey:'stu_id'})
 
 module.exports = Student;
 
