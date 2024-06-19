@@ -48,30 +48,7 @@ const deleteStudent = asyncWrapper(async (req, res, next) => {
     res.status(200).json(Student)
 })
 
-const verifyStudent = asyncWrapper(async (req, res, next) => {
-    const { fingerprint_id } = req.body;
 
-    if (!fingerprint_id) {
-        return res.status(400).json({ error: 'Fingerprint ID is required' });
-    }
-
-    try {
-        // Find the student with the given fingerprint ID
-        const student = await Student.findOne({ where: { fingerprint: fingerprint_id } });
-
-        if (!student) {
-            return res.status(404).json({ error: 'Student not found' });
-        }
-
-        // Return the student ID
-        return res.status(200).json({ studentId: student.stu_id });
-    } catch (error) {
-        // Handle any errors
-        console.error('Error verifying student:', error);
-        return res.status(500).json({ error: 'Internal server error' });
-    }
-    
-})
 
 
 
@@ -81,5 +58,5 @@ module.exports = {
     updateStudent,
     deleteStudent,
     getStudent,
-    verifyStudent
+    
 }

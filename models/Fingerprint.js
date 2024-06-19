@@ -8,8 +8,9 @@ const Fingerprint = sequelize.define('Fingerprint',{
     primaryKey: true,
     allowNull: false,
     validate: {
+      min:0,
       notNull: {
-        msg: 'Student ID is required'
+        msg: 'Fingerprint is required'
       }
     }
   },
