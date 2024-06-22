@@ -18,8 +18,7 @@ const Attendence = sequelize.define('Attendence', {
     },
     allowNull: false
   }
-}, {
-  timestamps: false // If you don't need timestamps
-});
+},
+);
 
 module.exports = Attendence;

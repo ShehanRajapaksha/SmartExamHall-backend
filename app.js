@@ -7,6 +7,7 @@ const fingerprints = require('./routes/fingerprints');
 const students = require('./routes/students');
 const exams = require('./routes/exams')
 const admins = require('./routes/admins')
+const attendence = require('./routes/attendence')
 
 const sequelize = require('./db/connect');
 
@@ -75,6 +76,7 @@ setWss(wss, clients);
 app.use('/api/v1/fingerprints', fingerprints);
 app.use('/api/v1/exams',authenticateToken,exams)
 app.use('/api/v1/admin',admins)
+app.use('/api/v1/attendence',attendence)
 
 
 
