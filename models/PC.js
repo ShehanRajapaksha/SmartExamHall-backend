@@ -3,10 +3,14 @@ const sequelize = require('../db/connect'); // Assuming you have a file for data
 
 const PC = sequelize.define('PC', {
     id: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.STRING,
         primaryKey: true,
-        autoIncrement: true,
+        autoIncrement: false,
         allowNull: false
+    },
+    assigned:{
+        type:DataTypes.BOOLEAN,
+        allowNull:true,
     }
 });
 

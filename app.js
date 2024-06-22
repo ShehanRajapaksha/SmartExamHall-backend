@@ -1,12 +1,24 @@
 const express = require('express');
 const cors = require('cors');
 const app = express();
-const students = require('./routes/students');
-const sequelize = require('./db/connect');
-const erroHandlerMiddleware = require('./middleware/errorHandler');
+
+
 const fingerprints = require('./routes/fingerprints');
+const students = require('./routes/students');
+const exams = require('./routes/exams')
+const admins = require('./routes/admins')
+
+const sequelize = require('./db/connect');
+
+const erroHandlerMiddleware = require('./middleware/errorHandler');
+const authenticateToken = require('./middleware/authMiddleware')
+
 const WebSocket = require('ws');
 const { setWss } = require('./controllers/fingerprints');
+const {pcAssignHandler} = require('./utils/clientHandlers')
+const { Student, Exam, Attendence, Fingerprint, PC } = require('./models/associations'); // Ensure correct import
+
+
 
 const server = require('http').createServer(app);
 const wss = new WebSocket.Server({ server: server });
@@ -25,8 +37,11 @@ wss.on('connection', function connection(ws) {
             // Assign the received message as the client ID
             const clientId = receivedMessage;
             clients.set(clientId, ws);
-            // console.log("assigning");
             console.log(`Assigned client ID: ${clientId}`);
+            if (clientId.startsWith('pc')) {
+                pcAssignHandler(clientId,ws)
+            } 
+            
         } else {
             console.log(`Received message: ${receivedMessage}`);
         }
@@ -54,17 +69,22 @@ wss.on('connection', function connection(ws) {
 app.use(express.json());
 app.use(cors());
 
-app.use('/api/v1/students', students);
+app.use('/api/v1/students',authenticateToken, students);
 
 setWss(wss, clients);
 app.use('/api/v1/fingerprints', fingerprints);
+app.use('/api/v1/exams',authenticateToken,exams)
+app.use('/api/v1/admin',admins)
+
+
+
 app.use(erroHandlerMiddleware);
 
 const port = 5000;
 
 const start = async () => {
     try {
-        await sequelize.sync({ force: false });
+        await sequelize.sync({ force:false});
         console.log("Database synchronized");
         server.listen(port, () => {
             console.log(`Server and socket listening on port ${port}`);

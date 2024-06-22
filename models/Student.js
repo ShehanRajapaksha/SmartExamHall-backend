@@ -1,7 +1,7 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../db/connect'); // Assuming you have a file for database connection setup
-const Fingerprint = require('./Fingerprint');
-const PC = require('./PC');
+// const Fingerprint = require('./Fingerprint');
+// const PC = require('./PC');
 
 const Student = sequelize.define('Student', {
   stu_id: {
@@ -60,12 +60,12 @@ const Student = sequelize.define('Student', {
 
 );
 
-Student.hasOne(Fingerprint,{foreignKey:'stu_id'})
+// Student.hasOne(Fingerprint,{foreignKey:'stu_id'})
 
-Fingerprint.belongsTo(Student,{foreignKey:'stu_id'})
+// Fingerprint.belongsTo(Student,{foreignKey:'stu_id'})
 
-Student.hasOne(PC,{foreignKey:"stu_id"})
-PC.belongsTo(Student,{foreignKey:'stu_id'})
+// Student.hasOne(PC,{foreignKey:"stu_id"})
+// PC.belongsTo(Student,{foreignKey:'stu_id'})
 
 module.exports = Student;
 
