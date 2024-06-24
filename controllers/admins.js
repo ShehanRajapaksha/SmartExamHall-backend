@@ -91,7 +91,14 @@ const loginAdmin = asyncWrapper(async (req, res, next) => {
         return next(err);
       }
   
-      res.status(200).json({ token,userId });
+    //   res.status(200).json({ token,userId });
+    res.cookie('jwt', token, {
+        httpOnly: true,
+        secure: true, // Set secure flag in production
+        maxAge: 3600000 // 1 hour
+      });
+  
+      res.status(200).json({ message: 'Login successful' });
     } catch (error) {
       next(error); // Passes error to the error handling middleware
     }

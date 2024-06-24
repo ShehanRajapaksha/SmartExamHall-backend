@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const app = express();
-
+const cookieParser = require('cookie-parser');
 
 const fingerprints = require('./routes/fingerprints');
 const students = require('./routes/students');
@@ -68,8 +68,12 @@ wss.on('connection', function connection(ws) {
 // console.log('WebSocket server is running');
 
 app.use(express.json());
-app.use(cors());
-
+// app.use(cors());
+app.use(cors({
+    origin: 'http://localhost:3000', // Adjust the origin to your frontend's URL
+    credentials: true // Allow credentials to be sent with requests
+  }));
+app.use(cookieParser());
 app.use('/api/v1/students',authenticateToken, students);
 
 setWss(wss, clients);

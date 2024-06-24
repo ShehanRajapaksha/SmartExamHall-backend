@@ -64,6 +64,49 @@ const getAttendence = asyncWrapper(async (req, res, next) => {
   }
 });
 
+const getAttendenceForActiveExams = asyncWrapper(async (req, res, next) => {
+    try {
+      // Fetch all active exams
+      const activeExams = await Exam.findAll({
+        where: {
+          active: true
+        }
+      });
+  
+      if (!activeExams.length) {
+        return res.status(404).json({ message: 'No active exams found' });
+      }
+  
+      // Extract active exam IDs
+      const activeExamIds = activeExams.map(exam => exam.exam_id);
+  
+      // Fetch attendance records for active exam IDs
+      const attendances = await Attendence.findAll({
+        where: {
+          exam_id: {
+            [Op.in]: activeExamIds
+          }
+        }
+      });
+  
+      // Extract relevant data from attendance records
+      const result = attendances.map(attendance => {
+        return {
+          createdAt: attendance.createdAt,
+          examId: attendance.exam_id,
+          studentId: attendance.student_id,
+          pcId: attendance.pc_id
+        };
+      });
+  
+      res.status(200).json(result);
+    } catch (error) {
+      next(error); // Passes error to the error handling middleware
+    }
+  });
+  
+
 module.exports = {
-  getAttendence
+  getAttendence,
+  getAttendenceForActiveExams
 };
