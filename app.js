@@ -16,8 +16,9 @@ const authenticateToken = require('./middleware/authMiddleware')
 
 const WebSocket = require('ws');
 const { setWss } = require('./controllers/fingerprints');
-const {pcAssignHandler} = require('./utils/clientHandlers')
+const {pcAssignHandler, pcDeleteHandler} = require('./utils/clientHandlers')
 const { Student, Exam, Attendence, Fingerprint, PC } = require('./models/associations'); // Ensure correct import
+const { log } = require('console');
 
 
 
@@ -25,7 +26,7 @@ const server = require('http').createServer(app);
 const wss = new WebSocket.Server({ server: server });
 const clients = new Map();
 
-
+//Web socket Definitions
 wss.on('connection', function connection(ws) {
     console.log('New Client Connected');
     
@@ -35,8 +36,7 @@ wss.on('connection', function connection(ws) {
         console.log('received:', receivedMessage);
         const pattern = /^(fp|pc|ad)[1-3]$/;
         if (pattern.test(receivedMessage)) {
-            // Assign the received message as the client ID
-            const clientId = receivedMessage;
+            const clientId = receivedMessage;   // Assign the received message as the client ID
             clients.set(clientId, ws);
             console.log(`Assigned client ID: ${clientId}`);
             if (clientId.startsWith('pc')) {
@@ -48,11 +48,21 @@ wss.on('connection', function connection(ws) {
         }
     });
 
-    ws.on('close', () => {
+    ws.on('close', async() => {
         // Remove the client from the Map when disconnected
         for (let [clientId, client] of clients.entries()) {
             if (client === ws) {
-                clients.delete(clientId);
+                
+                const del = await pcDeleteHandler(clientId)
+                if (del) {
+                    const client = clients.get(clientId);
+                    if (client && client.readyState === WebSocket.OPEN) {
+                        client.send(`Your PC has lost connection id:${clientId}`);
+                        
+                    } 
+                    clients.delete(clientId);
+                    console.log(`${clientId} deleted sucessfully`);
+                }
                 console.log(`Client ${clientId} disconnected`);
                 break;
             }
@@ -64,8 +74,7 @@ wss.on('connection', function connection(ws) {
     });
 });
 
-// Log message indicating WebSocket server is started
-// console.log('WebSocket server is running');
+
 
 app.use(express.json());
 // app.use(cors());
@@ -74,8 +83,8 @@ app.use(cors({
     credentials: true // Allow credentials to be sent with requests
   }));
 app.use(cookieParser());
-app.use('/api/v1/students',authenticateToken, students);
 
+app.use('/api/v1/students',authenticateToken, students);
 setWss(wss, clients);
 app.use('/api/v1/fingerprints', fingerprints);
 app.use('/api/v1/exams',authenticateToken,exams)

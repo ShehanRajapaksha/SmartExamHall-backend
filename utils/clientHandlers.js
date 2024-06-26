@@ -25,3 +25,29 @@ exports.pcAssignHandler = async(clientId,ws)=>{
     }
     
 }
+
+
+exports.pcDeleteHandler = async (clientId) => {
+    try {
+        // Find and delete the PC from the database
+        const pc = await PC.findOne({ where: { id: clientId } });
+
+        if (pc) {
+            await PC.destroy({ where: { id: clientId } });
+            console.log(`Deleted PC ID: ${clientId} from the database`);
+            // ws.send('Deleted PC ID: ' + clientId);
+            return true
+            
+        } else {
+            console.log(`PC ID: ${clientId} does not exist in the database`);
+            // ws.send('PC ID does not exist: ' + clientId);
+            return false
+        }
+    } catch (error) {
+        console.error('Error deleting PC:', error);
+        return false
+     
+    }
+};
+
+
