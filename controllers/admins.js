@@ -95,6 +95,7 @@ const loginAdmin = asyncWrapper(async (req, res, next) => {
     res.cookie('jwt', token, {
         httpOnly: true,
         secure: true, // Set secure flag in production
+        sameSite: 'None',
         maxAge: 3600000 // 1 hour
       });
   
@@ -103,8 +104,40 @@ const loginAdmin = asyncWrapper(async (req, res, next) => {
       next(error); // Passes error to the error handling middleware
     }
   });
+
+
+  const checkSession = asyncWrapper(async (req, res, next) => {
+    const token = req.cookies.jwt;
+    console.log(token);
+  
+    if (!token) {
+      return res.status(401).json({ valid: false, message: 'No token provided' });
+    }
+  
+    try {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      // If needed, you can fetch user data using the decoded information
+      // const userId = decoded.userId;
+      // const user = await Admin.findOne({ where: { userId } });
+  
+      res.status(200).json({ valid: true, message: 'Session is valid' });
+    } catch (error) {
+      res.status(401).json({ valid: false, message: 'Invalid or expired token' });
+    }
+  });
+
+  const logoutAdmin = asyncWrapper(async (req, res, next) => {
+    res.clearCookie('jwt', {
+      httpOnly: true,
+      secure: true, // Set secure flag in production
+      sameSite: 'None'
+    });
+    res.status(200).json({ message: 'Logout successful' });
+  });
   
 module.exports = {
     createAdmin,
-    loginAdmin
+    loginAdmin,
+    checkSession,
+    logoutAdmin
 };

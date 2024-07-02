@@ -23,6 +23,10 @@ const Exam = sequelize.define('Exam', {
     active:{
         type:DataTypes.BOOLEAN,
         allowNull:true
+    },
+    instructions:{
+        type:DataTypes.STRING,
+        allowNull:true
     }
 },
 

@@ -3,7 +3,7 @@ const e = require('express');
 const Exam = require('../models/Exam');
 
 const createExam = asyncWrapper(async (req, res, next) => {
-    const { module, date, duration } = req.body;
+    const { module, date, duration,instructions } = req.body;
 
     if (!module || !date || !duration) {
         const err = new Error('Module, date, and duration are required')
@@ -11,12 +11,25 @@ const createExam = asyncWrapper(async (req, res, next) => {
         return next(err)
     }
 
+
+
     try {
+
+        const existingExam = await Exam.findOne({ where: { module } });
+
+        if (existingExam) {
+            const err = new Error('An exam with this module name already exists');
+            err.status = 400;
+            return next(err);
+        }
+
+
         const newExam = await Exam.create({
             module,
             date,
             duration,
-            active:false
+            active:false,
+            instructions
         });
 
         res.status(201).json(newExam);

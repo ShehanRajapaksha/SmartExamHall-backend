@@ -11,7 +11,7 @@ const Exam = require("../models/Exam");
 const Attendence = require("../models/Attendence");
 
 let wss;
-let clients;
+let clients;  
 
 const setWss = (wsServer, clientMap) => {
     wss = wsServer;
@@ -85,7 +85,11 @@ const verifyStudent = asyncWrapper(async (req, res, next) => {
             });
 
             console.log(`Assigned PC ID: ${pcId} to student ID: ${fingerprint.stu_id} for exam ID: ${activeExam.exam_id}`);
-            return res.status(200).json({ studentId: fingerprint.stu_id, pcId, examId: activeExam.exam_id });
+            return res.status(200).json({ 
+              studentId: fingerprint.stu_id, 
+              pcId: pcId.replace('pc', ''), // Remove 'pc' part from pcId
+              examId: activeExam.exam_id 
+            });
       } else {
         const error = new Error('Failed to send activation message to the PC');
         error.status = 500;
@@ -168,4 +172,70 @@ const createFingerprint = asyncWrapper(async (req, res, next) => {
     }
 });
 
-module.exports = { verifyStudent,createFingerprint,setWss,setMode };
+
+
+const manualAttendance = asyncWrapper(async (req, res, next) => {
+  const { indexNumber } = req.body;
+
+  if (indexNumber === undefined || indexNumber === null) {
+      const error = new Error('Index number is required');
+      error.status = 400;
+      return next(error);
+  }
+
+  try {
+      const student = await Student.findOne({ where: { stu_id: indexNumber } });
+
+      if (!student) {
+          const error = new Error('Student not found');
+          error.status = 404;
+          return next(error);
+      }
+
+      const pcId = await pcAssign();
+
+      if (pcId === -1) {
+          const error = new Error('No available PCs for assignment');
+          error.status = 404;
+          return next(error);
+      }
+
+      const messageSent = sendMessageToClient(pcId, 'activate');
+
+      if (messageSent) {
+          const activeExam = await Exam.findOne({ where: { active: true } });
+          if (!activeExam) {
+              const error = new Error('No active exam found');
+              error.status = 404;
+              return next(error);
+          }
+
+          await PC.update(
+              { assigned: true },
+              { where: { id: pcId } }
+          );
+
+          const newAttendance = await Attendence.create({
+              exam_id: activeExam.exam_id,
+              student_id: student.stu_id,
+              pc_id: pcId
+          });
+
+          console.log(`Assigned PC ID: ${pcId} to student ID: ${student.stu_id} for exam ID: ${activeExam.exam_id}`);
+          return res.status(200).json({ 
+              studentId: student.stu_id, 
+              pcId: pcId.replace('pc', ''), 
+              examId: activeExam.exam_id 
+          });
+      } else {
+          const error = new Error('Failed to send activation message to the PC');
+          error.status = 500;
+          return next(error);
+      }
+  } catch (error) {
+      console.error('Error handling manual attendance:', error);
+      return next(error);
+  }
+});
+
+module.exports = { verifyStudent, createFingerprint, setWss, setMode, manualAttendance };

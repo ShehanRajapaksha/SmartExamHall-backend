@@ -54,6 +54,9 @@ const getAttendence = asyncWrapper(async (req, res, next) => {
           name: attendance.Student.name,
           batch: attendance.Student.batch,
           degree: attendance.Student.degree
+        },
+        pc:{
+          pcId:attendance.pc_id
         }
       };
     });
