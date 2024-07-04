@@ -8,6 +8,7 @@ const students = require('./routes/students');
 const exams = require('./routes/exams');
 const admins = require('./routes/admins');
 const attendence = require('./routes/attendence');
+const pcs =require('./routes/pcs')
 
 const sequelize = require('./db/connect');
 
@@ -30,7 +31,7 @@ wss.on('connection', function connection(ws) {
     ws.on('message', function incoming(msg) {
         const receivedMessage = msg.toString().trim();
         console.log('received:', receivedMessage);
-        const pattern = /^(fp|pc|ad)[1-3]$/;
+        const pattern = /^(fp|pc|ad)[1-90]$/;
         if (pattern.test(receivedMessage)) {
             const clientId = receivedMessage; // Assign the received message as the client ID
             clients.set(clientId, ws);
@@ -80,6 +81,7 @@ app.use('/api/v1/attendence', attendence);
 app.use('/api/v1/fingerprints', fingerprints);
 app.use('/api/v1/students', authenticateToken, students);
 app.use('/api/v1/exams', authenticateToken, exams);
+app.use('/api/v1/pcs', authenticateToken, pcs);
 
 
 setWss(wss, clients);

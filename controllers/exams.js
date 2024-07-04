@@ -121,10 +121,30 @@ const setActive = asyncWrapper(async (req, res, next) => {
     }
 });
 
+
+const getExamById = asyncWrapper(async (req, res, next) => {
+    const { id: examId } = req.params;
+
+    try {
+        const exam = await Exam.findOne({ where: { exam_id: examId } });
+
+        if (!exam) {
+            const error = new Error('Exam not found');
+            error.status = 404;
+            return next(error);
+        }
+
+        res.status(200).json(exam);
+    } catch (error) {
+        next(error); // Passes error to the error handling middleware
+    }
+});
+
 module.exports = {
     createExam,
     getAllExam,
     updateExam,
     deleteExam,
-    setActive
+    setActive,
+    getExamById
 };

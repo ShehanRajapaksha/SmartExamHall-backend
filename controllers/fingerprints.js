@@ -94,7 +94,7 @@ const verifyStudent = asyncWrapper(async (req, res, next) => {
         const error = new Error('Failed to send activation message to the PC');
         error.status = 500;
         return next(error)
-      }
+      } 
   } catch (error) {
     console.error('Error verifying student:', error);
     return next(error); // Pass the error to the error handling middleware

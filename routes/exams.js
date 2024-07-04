@@ -1,7 +1,7 @@
 const express = require('express');
 const router =express.Router();
 
-const {createExam,getAllExam,updateExam,deleteExam,setActive} = require('../controllers/exams')
+const {createExam,getAllExam,updateExam,deleteExam,setActive,  getExamById} = require('../controllers/exams')
 
 router.route('/')
   .post(createExam)
@@ -9,7 +9,8 @@ router.route('/')
 
 router.route('/:id')
   .patch(updateExam)
-  .delete(deleteExam);
+  .delete(deleteExam)
+  .get(getExamById)
 
 router.route('/setActive').post(setActive)
 

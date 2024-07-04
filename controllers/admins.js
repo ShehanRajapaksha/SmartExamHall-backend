@@ -108,7 +108,7 @@ const loginAdmin = asyncWrapper(async (req, res, next) => {
 
   const checkSession = asyncWrapper(async (req, res, next) => {
     const token = req.cookies.jwt;
-    console.log(token);
+    // console.log(token);
   
     if (!token) {
       return res.status(401).json({ valid: false, message: 'No token provided' });
