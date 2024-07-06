@@ -8,7 +8,7 @@ const students = require('./routes/students');
 const exams = require('./routes/exams');
 const admins = require('./routes/admins');
 const attendence = require('./routes/attendence');
-const pcs =require('./routes/pcs')
+const pcs = require('./routes/pcs');
 
 const sequelize = require('./db/connect');
 
@@ -24,48 +24,101 @@ const server = require('http').createServer(app);
 const wss = new WebSocket.Server({ server: server });
 const clients = new Map();
 
+const HEARTBEAT_INTERVAL = 30000; // 30 seconds
+const HEARTBEAT_TIMEOUT = 5000; // 5 seconds
+
+function noop() { }
+
+function heartbeat() {
+    this.isAlive = true;
+}
+
+
+function isJsonString(str) {
+    try {
+        JSON.parse(str);
+    } catch (e) {
+        return false;
+    }
+    return true;
+}
+
 // WebSocket Definitions
 wss.on('connection', function connection(ws) {
     console.log('New Client Connected');
+    ws.isAlive = true;
+    ws.on('pong', heartbeat);
 
     ws.on('message', function incoming(msg) {
-        const receivedMessage = msg.toString().trim();
-        console.log('received:', receivedMessage);
-        const pattern = /^(fp|pc|ad)[1-90]$/;
-        if (pattern.test(receivedMessage)) {
-            const clientId = receivedMessage; // Assign the received message as the client ID
-            clients.set(clientId, ws);
-            console.log(`Assigned client ID: ${clientId}`);
-            if (clientId.startsWith('pc')) {
-                pcAssignHandler(clientId, ws);
+        try {
+            const receivedMessage = msg.toString().trim();
+            console.log('received:', receivedMessage);
+            if (isJsonString(receivedMessage)) {
+                const parsedMessage = JSON.parse(receivedMessage);
+
+                // Check if the message has a 'type' attribute
+                if (parsedMessage.type === 'register' && parsedMessage.pc_name) {
+                    const pcName = parsedMessage.pc_name;
+                    clients.set(pcName, ws);
+                    console.log(`Registering PC with name: ${pcName}`);
+                    pcAssignHandler(pcName, ws);
+                }
             }
-        } else {
-            console.log(`Received message: ${receivedMessage}`);
+
+            const pattern = /^(fp|pc|ad)[1-90]$/;
+            if (pattern.test(receivedMessage)) {
+                const clientId = receivedMessage; // Assign the received message as the client ID
+                clients.set(clientId, ws);
+                console.log(`Assigned client ID: ${clientId}`);
+                if (clientId.startsWith('pc')) {
+                    pcAssignHandler(clientId, ws);
+                }
+            } else {
+                console.log(`Received message: ${receivedMessage}`);
+            }
+        } catch (error) {
+            console.error('Error processing message:', error);
         }
     });
 
     ws.on('close', async () => {
-        // Remove the client from the Map when disconnected
-        for (let [clientId, client] of clients.entries()) {
-            if (client === ws) {
-                const del = await pcDeleteHandler(clientId);
-                if (del) {
-                    const client = clients.get(clientId);
-                    if (client && client.readyState === WebSocket.OPEN) {
-                        client.send(`Your PC has lost connection id:${clientId}`);
+        try {
+            // Remove the client from the Map when disconnected
+            for (let [clientId, client] of clients.entries()) {
+                if (client === ws) {
+                    const del = await pcDeleteHandler(clientId);
+                    if (del) {
+                        clients.delete(clientId);
+                        console.log(`${clientId} deleted successfully from the database`);
                     }
-                    clients.delete(clientId);
-                    console.log(`${clientId} deleted successfully`);
+                    console.log(`Client ${clientId} disconnected`);
+                    break;
                 }
-                console.log(`Client ${clientId} disconnected`);
-                break;
             }
+        } catch (error) {
+            console.error('Error during disconnection:', error);
         }
     });
 
     ws.on('error', function (error) {
         console.error('WebSocket error observed:', error);
     });
+});
+
+// Ping clients at regular intervals to ensure connection is alive
+const interval = setInterval(() => {
+    wss.clients.forEach((ws) => {
+        if (ws.isAlive === false) {
+            return ws.terminate();
+        }
+
+        ws.isAlive = false;
+        ws.ping(noop);
+    });
+}, HEARTBEAT_INTERVAL);
+
+wss.on('close', function close() {
+    clearInterval(interval);
 });
 
 app.use(express.json());
@@ -82,7 +135,6 @@ app.use('/api/v1/fingerprints', fingerprints);
 app.use('/api/v1/students', authenticateToken, students);
 app.use('/api/v1/exams', authenticateToken, exams);
 app.use('/api/v1/pcs', authenticateToken, pcs);
-
 
 setWss(wss, clients);
 

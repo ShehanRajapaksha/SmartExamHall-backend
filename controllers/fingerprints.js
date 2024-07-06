@@ -58,19 +58,22 @@ const verifyStudent = asyncWrapper(async (req, res, next) => {
         return next(error); 
       }
 
-      // Send activation message to the assigned PC
-      const messageSent = sendMessageToClient(pcId, 'activate');
-
-      if (messageSent) {
-          // Update the PC record in the database 
-         
-          
-          const activeExam = await Exam.findOne({ where: { active: true } });
+      const activeExam = await Exam.findOne({ where: { active: true } });
             if (!activeExam) {
                 const error = new Error('No active exam found');
                 error.status = 404;
                 return next(error); // Ensure the function returns immediately after calling next
             }
+
+      // Send activation message to the assigned PC
+     
+      const messageSent = sendMessageToClient(pcId, `active,${fingerprint.stu_id},${activeExam.exam_id}`);
+
+      if (messageSent) {
+          // Update the PC record in the database 
+         
+          
+          
 
           await PC.update(
               { assigned: true},
@@ -200,15 +203,17 @@ const manualAttendance = asyncWrapper(async (req, res, next) => {
           return next(error);
       }
 
-      const messageSent = sendMessageToClient(pcId, 'activate');
+      const activeExam = await Exam.findOne({ where: { active: true } });
+      if (!activeExam) {
+          const error = new Error('No active exam found');
+          error.status = 404;
+          return next(error);
+      }
+      const msg ={studentId:student.stu_id,examId:activeExam.exam_id,status:'active'}
+      const messageSent = sendMessageToClient(pcId, msg);
 
       if (messageSent) {
-          const activeExam = await Exam.findOne({ where: { active: true } });
-          if (!activeExam) {
-              const error = new Error('No active exam found');
-              error.status = 404;
-              return next(error);
-          }
+        
 
           await PC.update(
               { assigned: true },
