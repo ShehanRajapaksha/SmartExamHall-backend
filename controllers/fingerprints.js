@@ -209,8 +209,8 @@ const manualAttendance = asyncWrapper(async (req, res, next) => {
           error.status = 404;
           return next(error);
       }
-      const msg ={studentId:student.stu_id,examId:activeExam.exam_id,status:'active'}
-      const messageSent = sendMessageToClient(pcId, msg);
+      // const msg ={studentId:student.stu_id,examId:activeExam.exam_id,status:'active'}
+      const messageSent = sendMessageToClient(pcId, `active,${student.stu_id},${activeExam.exam_id}`);
 
       if (messageSent) {
         
