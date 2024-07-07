@@ -109,14 +109,20 @@ wss.on('connection', function connection(ws) {
 // Ping clients at regular intervals to ensure connection is alive
 const interval = setInterval(() => {
     wss.clients.forEach((ws) => {
-        if (ws.isAlive === false) {
-            return ws.terminate();
-        }
+        // Only perform heartbeat for clients with IDs starting with 'pc'
+        for (let [clientId, client] of clients.entries()) {
+            if (client === ws && clientId.startsWith('pc')) {
+                if (ws.isAlive === false) {
+                    return ws.terminate();
+                }
 
-        ws.isAlive = false;
-        ws.ping(noop);
+                ws.isAlive = false;
+                ws.ping(noop);
+            }
+        }
     });
 }, HEARTBEAT_INTERVAL);
+
 
 wss.on('close', function close() {
     clearInterval(interval);
