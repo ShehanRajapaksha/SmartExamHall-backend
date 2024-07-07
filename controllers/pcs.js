@@ -1,5 +1,6 @@
 const asyncWrapper = require("../middleware/async");
 const PC = require("../models/PC");
+const { sendMessageToClient } = require("./fingerprints");
 
 
 
@@ -18,8 +19,19 @@ const getAllPcs = asyncWrapper(async (req, res, next) => {
   const resetAllPcsAssignedStatus = asyncWrapper(async (req, res, next) => {
     const transaction = await PC.sequelize.transaction();
     try {
-      await PC.update({ assigned: false }, { where: {}, transaction }); // Update assigned to false for all PCs
+      // Fetch all PC IDs from the table
+      const allPcs = await PC.findAll({ attributes: ['id'], transaction });
+  
+      // Send a 'deactivate' message to each PC
+      allPcs.forEach(pc => {
+        sendMessageToClient(pc.id, 'deactivate');
+      });
+  
+      // Update assigned to false for all PCs
+      await PC.update({ assigned: false }, { where: {}, transaction });
+  
       await transaction.commit();
+  
       res.status(200).json({
         message: "All PCs assigned status reset to false"
       });

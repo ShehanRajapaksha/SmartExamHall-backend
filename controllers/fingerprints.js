@@ -67,7 +67,8 @@ const verifyStudent = asyncWrapper(async (req, res, next) => {
 
       // Send activation message to the assigned PC
      
-      const messageSent = sendMessageToClient(pcId, `active,${fingerprint.stu_id},${activeExam.exam_id}`);
+      const messageSent = sendMessageToClient(pcId, `activate,${fingerprint.stu_id},${activeExam.exam_id}`);
+      // const messageSent = sendMessageToClient(pcId, `activate`);
 
       if (messageSent) {
           // Update the PC record in the database 
@@ -210,7 +211,7 @@ const manualAttendance = asyncWrapper(async (req, res, next) => {
           return next(error);
       }
       // const msg ={studentId:student.stu_id,examId:activeExam.exam_id,status:'active'}
-      const messageSent = sendMessageToClient(pcId, `active,${student.stu_id},${activeExam.exam_id}`);
+      const messageSent = sendMessageToClient(pcId, `activate,${student.stu_id},${activeExam.exam_id}`);
 
       if (messageSent) {
         
@@ -243,4 +244,48 @@ const manualAttendance = asyncWrapper(async (req, res, next) => {
   }
 });
 
-module.exports = { verifyStudent, createFingerprint, setWss, setMode, manualAttendance };
+
+
+const revokeAttendance = asyncWrapper(async (req, res, next) => {
+  const { pcId } = req.body;
+
+  if (pcId === undefined || pcId === null) {
+    const error = new Error('PC ID is required');
+    error.status = 400;
+    return next(error);
+  }
+
+  try {
+    // Find the PC with the given ID
+    const pc = await PC.findOne({ where: { id: pcId } });
+
+    if (!pc) {
+      const error = new Error('PC not found');
+      error.status = 404;
+      return next(error);
+    }
+
+    // Update the PC's assigned status to false
+    await PC.update(
+      { assigned: false },
+      { where: { id: pcId } }
+    );
+
+    // Send a 'deactivate' message to the PC client
+    const messageSent = sendMessageToClient(pcId, 'deactivate');
+
+    if (messageSent) {
+      return res.status(200).json({ message: `PC ID: ${pcId} deactivated successfully` });
+    } else {
+      const error = new Error('Failed to send deactivate message to the PC');
+      error.status = 500;
+      return next(error);
+    }
+  } catch (error) {
+    console.error('Error revoking attendance:', error);
+    return next(error); // Pass the error to the error handling middleware
+  }
+});
+
+
+module.exports = { verifyStudent, createFingerprint, setWss, setMode, manualAttendance,revokeAttendance,sendMessageToClient };

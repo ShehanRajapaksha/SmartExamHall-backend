@@ -107,9 +107,64 @@ const getAttendenceForActiveExams = asyncWrapper(async (req, res, next) => {
       next(error); // Passes error to the error handling middleware
     }
   });
+
+
+  const getAttendenceByExamId = asyncWrapper(async (req, res, next) => {
+    const { examId } = req.body;
+  
+    if (!examId) {
+      const error = new Error('Exam ID is required');
+      error.status = 400;
+      return next(error);
+    }
+  
+    try {
+      // Fetch all attendance records for the specified exam ID
+      const attendances = await Attendence.findAll({
+        where: {
+          exam_id: examId
+        },
+        include: [
+          {
+            model: Exam
+          },
+          {
+            model: Student
+          }
+        ]
+      });
+  
+      // Extract relevant data from attendance records
+      const result = attendances.map(attendance => {
+        return {
+          createdAt: attendance.createdAt,
+          exam: {
+            examId: attendance.Exam.exam_id,
+            module: attendance.Exam.module,
+            date: attendance.Exam.date,
+            duration: attendance.Exam.duration
+          },
+          student: {
+            studentId: attendance.Student.stu_id,
+            name: attendance.Student.name,
+            batch: attendance.Student.batch,
+            degree: attendance.Student.degree
+          },
+          pc: {
+            pcId: attendance.pc_id
+          }
+        };
+      });
+  
+      res.status(200).json(result);
+    } catch (error) {
+      next(error); // Passes error to the error handling middleware
+    }
+  });
   
 
 module.exports = {
   getAttendence,
-  getAttendenceForActiveExams
+  getAttendenceForActiveExams,
+  getAttendenceByExamId
 };

@@ -42,16 +42,16 @@ const getStudent = asyncWrapper(async (req, res, next) => {
      const { id: stu_ID } = req.params
     
 
-     const Student = await Student.findByPk(stu_ID)
-     if (!Student) {
+     const student = await Student.findByPk(stu_ID)
+     if (!student) {
         //  return res.status(404).json({ msg: `No task with id:${stu_ID}` })
          const error=new Error(`No student with id:${stu_ID}`)
          error.status =404
          next(error)
      }
-     res.send(Student)
+     res.send(student)
    } catch (error) {
-    
+    console.log(error);
     next(error)
    
     }

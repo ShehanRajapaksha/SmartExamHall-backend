@@ -1,6 +1,7 @@
 const asyncWrapper = require('../middleware/async');
 const e = require('express');
 const Exam = require('../models/Exam');
+const WebSocket = require('ws'); 
 
 const createExam = asyncWrapper(async (req, res, next) => {
     const { module, date, duration,instructions } = req.body;
@@ -136,9 +137,62 @@ const getExamById = asyncWrapper(async (req, res, next) => {
 
         res.status(200).json(exam);
     } catch (error) {
+        console.log(error);
         next(error); // Passes error to the error handling middleware
     }
 });
+
+const startExam = async (clients, req, res, next) => {
+    try {
+        const activeExam = await Exam.findOne({ where: { active: true } });
+
+        if (!activeExam) {
+            const error = new Error('No active exam found');
+            error.status = 404;
+            return next(error);
+        }
+
+        const duration = activeExam.duration * 60; // convert minutes to seconds
+
+        let timeLeft = duration;
+
+        // Function to broadcast the remaining time to all connected clients
+        const broadcastTime = () => {
+            // const message = JSON.stringify({ type: 'countdown', timeLeft });
+            const message = `timer,${timeLeft}`;
+            clients.forEach((client, clientId) => {
+                if (client.readyState === WebSocket.OPEN && clientId.startsWith('pc')) {
+                    client.send(message);
+                }
+            });
+        };
+
+        // Broadcast the initial time
+        broadcastTime();
+
+        // Start the countdown timer
+        const countdownInterval = setInterval(() => {
+            timeLeft -= 1;
+            broadcastTime();
+
+            if (timeLeft <= 0) {
+                clearInterval(countdownInterval);
+                // Optionally, broadcast that the exam has ended
+                const endMessage = JSON.stringify({ type: 'examEnded' });
+                clients.forEach((client, clientId) => {
+                    if (client.readyState === WebSocket.OPEN && clientId.startsWith('pc')) {
+                        client.send(endMessage);
+                    }
+                });
+            }
+        }, 1000);
+
+        res.status(200).json({ message: 'Exam started successfully', duration });
+    } catch (error) {
+        next(error); // Passes error to the error handling middleware
+    }
+};
+
 
 module.exports = {
     createExam,
@@ -146,5 +200,6 @@ module.exports = {
     updateExam,
     deleteExam,
     setActive,
-    getExamById
+    getExamById,
+    startExam
 };

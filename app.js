@@ -19,6 +19,7 @@ const WebSocket = require('ws');
 const { setWss } = require('./controllers/fingerprints');
 const { pcAssignHandler, pcDeleteHandler } = require('./utils/clientHandlers');
 const { Student, Exam, Attendence, Fingerprint, PC } = require('./models/associations'); // Ensure correct import
+const { startExam } = require('./controllers/exams');
 
 const server = require('http').createServer(app);
 const wss = new WebSocket.Server({ server: server });
@@ -65,7 +66,7 @@ wss.on('connection', function connection(ws) {
                 }
             }
 
-            const pattern = /^(fp|pc|ad)[1-90]$/;
+            const pattern = /^(fp|pc|ad)0?[1-9][0-9]?$/;
             if (pattern.test(receivedMessage)) {
                 const clientId = receivedMessage; // Assign the received message as the client ID
                 clients.set(clientId, ws);
@@ -132,9 +133,10 @@ app.use(cookieParser());
 app.use('/api/v1/admin', admins); // No authentication middleware for /login route
 app.use('/api/v1/attendence', attendence);
 app.use('/api/v1/fingerprints', fingerprints);
-app.use('/api/v1/students', authenticateToken, students);
-app.use('/api/v1/exams', authenticateToken, exams);
-app.use('/api/v1/pcs', authenticateToken, pcs);
+app.use('/api/v1/students', students);
+app.use('/api/v1/exams', exams);
+app.use('/api/v1/pcs',  pcs);
+app.post('/startexam',  (req, res, next) => startExam(clients, req, res, next));
 
 setWss(wss, clients);
 
