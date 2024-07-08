@@ -273,6 +273,7 @@ const revokeAttendance = asyncWrapper(async (req, res, next) => {
 
     // Send a 'deactivate' message to the PC client
     const messageSent = sendMessageToClient(pcId, 'deactivate');
+    clients.delete(pcId); // Remove the client from the map
 
     if (messageSent) {
       return res.status(200).json({ message: `PC ID: ${pcId} deactivated successfully` });
