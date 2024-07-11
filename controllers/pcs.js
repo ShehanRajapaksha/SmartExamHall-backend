@@ -25,7 +25,7 @@ const getAllPcs = asyncWrapper(async (req, res, next) => {
       // Send a 'deactivate' message to each PC
       allPcs.forEach(pc => {
         sendMessageToClient(pc.id, 'deactivate');
-        clients.delete(pc.id); // Remove the client from the map
+      
       });
   
       // Update assigned to false for all PCs
